@@ -1,467 +1,322 @@
 "use client";
 
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { ArrowRight, Play, BarChart3, Users, Zap, Globe } from "lucide-react";
+import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import UnifiedOSAnimation from "./UnifiedOSAnimation";
 
 // ==============================================================================
-// FIFTHKEYS HERO: SCROLL-TRIGGERED SLIDE SEQUENCE
-// Framework: Framer Motion + Tailwind
+// FIFTHKEYS HERO SECTION: JAPAN BLUE (Deep Ocean / Digital Dawn)
 // ==============================================================================
 
 const TOKENS = {
   deepVoid: "#000B18",
   navySurface: "#001B3D",
-  cyan: "#00E5FF",
+  oceanBlue: "#002A5A",
   electricBlue: "#1E50FF",
+  cyan: "#00E5FF",
   mintStatus: "#00F59B",
   textPrimary: "#FFFFFF",
   textSecondary: "#94A3B8",
 };
 
-// Satellite nodes with scatter positions
-const SATELLITE_NODES = [
-  { id: "pms", icon: "📊", label: "PMS", scatterX: -250, scatterY: -200 },
-  { id: "cm", icon: "🔗", label: "CM", scatterX: 280, scatterY: -180 },
-  { id: "ota", icon: "🌐", label: "OTA", scatterX: 320, scatterY: 50 },
-  { id: "rms", icon: "💹", label: "RMS", scatterX: 260, scatterY: 220 },
-  { id: "ai", icon: "🤖", label: "AI", scatterX: 80, scatterY: 280 },
-  { id: "crm", icon: "📧", label: "CRM", scatterX: -150, scatterY: 260 },
-  { id: "lock", icon: "🔐", label: "Lock", scatterX: -300, scatterY: 100 },
-  { id: "analytics", icon: "📈", label: "分析", scatterX: -280, scatterY: -80 },
-];
+const MOTION_CURVE = [0.22, 1, 0.36, 1];
 
-const ITEM_COUNT = SATELLITE_NODES.length;
-const RADIUS = 180;
+// Animation presets
+const FADE_UP = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 1.2, delay: 0.2, ease: "easeOut" },
+};
 
-// Mini Dashboard Preview Component
-function DashboardPreview({ opacity }: { opacity: number }) {
+const SCALE_IN = {
+  initial: { opacity: 0, scale: 0.95 },
+  animate: { opacity: 1, scale: 1 },
+  transition: { duration: 1.2, ease: "easeOut" },
+};
+
+// Typewriter cursor effect
+function TypewriterCursor() {
   return (
-    <motion.div
-      className="absolute inset-0 flex items-center justify-center"
-      style={{ opacity }}
-    >
-      <div 
-        className="w-full max-w-lg p-6 rounded-2xl"
-        style={{
-          background: "rgba(0, 27, 61, 0.8)",
-          border: "1px solid rgba(0, 229, 255, 0.2)",
-          backdropFilter: "blur(20px)",
-        }}
-      >
-        {/* Mini KPI Cards */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {[
-            { icon: BarChart3, label: "稼働率", value: "87%" },
-            { icon: Users, label: "予約数", value: "142" },
-            { icon: Zap, label: "RevPAR", value: "¥18,500" },
-          ].map((kpi, i) => (
-            <div 
-              key={i}
-              className="p-3 rounded-xl text-center"
-              style={{ background: "rgba(0, 229, 255, 0.1)" }}
-            >
-              <kpi.icon className="w-5 h-5 mx-auto mb-1" style={{ color: TOKENS.cyan }} />
-              <div className="text-lg font-bold text-white">{kpi.value}</div>
-              <div className="text-[9px] text-white/50">{kpi.label}</div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Mini Chart */}
-        <div 
-          className="h-20 rounded-lg flex items-end justify-around px-2 pb-2"
-          style={{ background: "rgba(0, 11, 24, 0.5)" }}
-        >
-          {[40, 65, 45, 80, 60, 90, 75].map((h, i) => (
-            <motion.div
-              key={i}
-              className="w-6 rounded-t"
-              style={{ 
-                height: `${h}%`, 
-                background: `linear-gradient(to top, ${TOKENS.electricBlue}, ${TOKENS.cyan})`,
-              }}
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
-            />
-          ))}
-        </div>
-        
-        {/* Status Bar */}
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-xs text-white/60">リアルタイム更新中</span>
-          </div>
-          <span className="text-xs text-cyan-400">FifthKeys Dashboard →</span>
-        </div>
-      </div>
-    </motion.div>
+    <motion.span
+      className="inline-block w-[3px] h-[1.1em] ml-1 align-middle"
+      style={{ background: TOKENS.cyan }}
+      animate={{ opacity: [1, 0, 1] }}
+      transition={{ duration: 1, repeat: Infinity }}
+    />
+  );
+}
+
+// Revenue stream visualization (abstract glowing lines)
+function RevenueStream() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(5)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-px"
+          style={{
+            left: `${20 + i * 15}%`,
+            bottom: 0,
+            height: "100%",
+            background: `linear-gradient(to top, transparent, ${
+              i % 2 === 0 ? TOKENS.electricBlue : TOKENS.mintStatus
+            }20, transparent)`,
+          }}
+          animate={{
+            y: [100, -100],
+            opacity: [0, 0.5, 0],
+          }}
+          transition={{
+            duration: 4 + i * 0.5,
+            repeat: Infinity,
+            delay: i * 0.8,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
 export default function JapanBlueHero() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const stickyRef = useRef<HTMLDivElement>(null);
-  
-  // Scroll progress (0 to 1)
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-  
-  // Smooth scroll progress
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
-  
-  // Phase 1 (0-33%): Scattered → Starting convergence
-  // Phase 2 (33-66%): Converging → Settled
-  // Phase 3 (66-100%): Fade out → Dashboard fade in
-  
-  // Hub scale: grows slightly during convergence
-  const hubScale = useTransform(smoothProgress, [0, 0.33, 0.66, 1], [0.8, 1, 1.1, 0.9]);
-  const hubOpacity = useTransform(smoothProgress, [0, 0.1, 0.8, 1], [0, 1, 1, 0.3]);
-  const hubGlow = useTransform(smoothProgress, [0.3, 0.5, 0.66], [0.3, 0.8, 1]);
-  
-  // Text opacity: fades based on scroll
-  const textOpacity1 = useTransform(smoothProgress, [0, 0.15, 0.6, 0.75], [0, 1, 1, 0]);
-  const textOpacity2 = useTransform(smoothProgress, [0.1, 0.25, 0.55, 0.7], [0, 1, 1, 0]);
-  const textOpacity3 = useTransform(smoothProgress, [0.15, 0.3, 0.5, 0.65], [0, 1, 1, 0]);
-  
-  // Dashboard preview opacity
-  const dashboardOpacity = useTransform(smoothProgress, [0.7, 0.85, 1], [0, 1, 1]);
-  
-  // Connection lines opacity
-  const linesOpacity = useTransform(smoothProgress, [0.33, 0.5, 0.7, 0.85], [0, 0.3, 0.3, 0]);
-
-  // Get satellite position based on scroll progress
-  const getSatelliteTransform = (index: number) => {
-    const node = SATELLITE_NODES[index];
-    const angleDeg = (360 / ITEM_COUNT) * index - 90;
-    const angleRad = (angleDeg * Math.PI) / 180;
-    
-    // Final orbital position
-    const finalX = Math.cos(angleRad) * RADIUS;
-    const finalY = Math.sin(angleRad) * RADIUS;
-    
-    // X position: scatter → orbit → fade position
-    const x = useTransform(
-      smoothProgress,
-      [0, 0.33, 0.66, 1],
-      [node.scatterX, finalX, finalX, finalX * 0.5]
-    );
-    
-    // Y position: scatter → orbit → fade position  
-    const y = useTransform(
-      smoothProgress,
-      [0, 0.33, 0.66, 1],
-      [node.scatterY, finalY, finalY, finalY * 0.5]
-    );
-    
-    // Opacity: invisible → visible → fade out
-    const opacity = useTransform(
-      smoothProgress,
-      [0, 0.1, 0.33, 0.75, 0.9],
-      [0, 0.5, 1, 1, 0]
-    );
-    
-    // Scale: small → normal → shrink
-    const scale = useTransform(
-      smoothProgress,
-      [0, 0.33, 0.66, 1],
-      [0.5, 1, 1, 0.3]
-    );
-    
-    return { x, y, opacity, scale };
-  };
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section 
-      ref={containerRef}
-      className="relative h-[300vh]"
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen flex items-center overflow-hidden pt-24 pb-16"
       style={{ background: TOKENS.deepVoid }}
     >
-      {/* Sticky Container */}
-      <div 
-        ref={stickyRef}
-        className="sticky top-0 h-screen overflow-hidden"
-      >
-        {/* Background Gradient */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(circle at 50% 30%, ${TOKENS.navySurface} 0%, ${TOKENS.deepVoid} 70%)`,
-          }}
-        />
-        
-        {/* Grid */}
-        <motion.div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px)
-            `,
-            backgroundSize: "60px 60px",
-            opacity: useTransform(smoothProgress, [0, 0.5, 1], [0.3, 0.5, 0.2]),
-          }}
-        />
+      {/* Revenue Stream Background Effect */}
+      <RevenueStream />
 
-        {/* Main Content Area */}
-        <div className="relative h-full flex items-center justify-center">
+      {/* Radial gradient overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 50% -20%, ${TOKENS.oceanBlue} 0%, transparent 60%)`,
+        }}
+      />
+
+      {/* Main Content Grid */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 w-full">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left: Text Content */}
-          <div className="absolute left-8 md:left-16 lg:left-24 top-1/2 -translate-y-1/2 max-w-lg z-20">
-            {/* Tag */}
+          <div className="space-y-8">
+            {/* Tag Badge */}
             <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
+              initial={FADE_UP.initial}
+              animate={isInView ? FADE_UP.animate : {}}
+              transition={FADE_UP.transition}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
               style={{
-                opacity: textOpacity1,
                 background: "rgba(0, 229, 255, 0.1)",
                 border: "1px solid rgba(0, 229, 255, 0.3)",
               }}
             >
-              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: TOKENS.mintStatus }} />
-              <span className="text-[11px] font-mono tracking-widest" style={{ color: TOKENS.cyan }}>
-                FIFTHKEYS HOTEL OS
+              <span
+                className="w-2 h-2 rounded-full animate-pulse"
+                style={{ background: TOKENS.mintStatus }}
+              />
+              <span
+                className="text-[11px] font-mono tracking-widest uppercase"
+                style={{ color: TOKENS.cyan }}
+              >
+                FIFTHKEYS HOTEL OS ● LIVE
               </span>
             </motion.div>
 
-            {/* Headline */}
-            <motion.h1
-              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4"
-              style={{ 
-                opacity: textOpacity1,
-                fontFamily: "'Noto Sans JP', sans-serif",
-                fontFeatureSettings: "'palt'",
-                background: "linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
+            {/* Main Headline */}
+            <motion.div
+              initial={SCALE_IN.initial}
+              animate={isInView ? SCALE_IN.animate : {}}
+              transition={{ ...SCALE_IN.transition, delay: 0.4 }}
+              className="mb-4"
             >
-              完全成果報酬型
-              <br />
-              ホテルOS
-            </motion.h1>
+              <h1
+                className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]"
+                style={{
+                  fontFamily: "'Noto Sans JP', sans-serif",
+                  fontFeatureSettings: "'palt'",
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                完全成果報酬型
+              </h1>
+            </motion.div>
 
-            {/* Subheadline */}
+            <motion.div
+              initial={SCALE_IN.initial}
+              animate={isInView ? SCALE_IN.animate : {}}
+              transition={{ ...SCALE_IN.transition, delay: 0.5 }}
+              className="mb-6"
+            >
+              <h1
+                className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight"
+                style={{
+                  fontFamily: "'Noto Sans JP', sans-serif",
+                  color: TOKENS.textPrimary,
+                }}
+              >
+                ホテルOS
+              </h1>
+            </motion.div>
+
+            {/* Subheadline with cursor */}
             <motion.p
-              className="text-xl md:text-2xl mb-8 font-medium"
-              style={{ 
-                opacity: textOpacity2,
+              initial={FADE_UP.initial}
+              animate={isInView ? FADE_UP.animate : {}}
+              transition={{ ...FADE_UP.transition, delay: 0.7 }}
+              className="text-xl md:text-2xl font-medium"
+              style={{
                 color: TOKENS.cyan,
                 fontFeatureSettings: "'palt'",
               }}
             >
               リスクゼロで、直接予約を最大化
+              <TypewriterCursor />
             </motion.p>
 
             {/* Value Props */}
             <motion.div
-              className="flex gap-6 mb-8"
-              style={{ opacity: textOpacity3 }}
+              initial={FADE_UP.initial}
+              animate={isInView ? FADE_UP.animate : {}}
+              transition={{ ...FADE_UP.transition, delay: 0.9 }}
+              className="flex flex-wrap gap-6"
             >
               {[
-                { label: "初期費用", value: "¥0" },
-                { label: "固定費", value: "¥0" },
-                { label: "成功報酬", value: "3%" },
-              ].map((prop, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-2xl font-bold font-mono" style={{ color: TOKENS.mintStatus }}>
-                    {prop.value}
-                  </div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
-                    {prop.label}
-                  </div>
+                { icon: CheckCircle2, text: "初期費用 ¥0" },
+                { icon: CheckCircle2, text: "固定費 ¥0" },
+                { icon: CheckCircle2, text: "成功報酬 3%" },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 text-sm"
+                  style={{ color: TOKENS.textSecondary }}
+                >
+                  <item.icon
+                    className="w-4 h-4"
+                    style={{ color: TOKENS.mintStatus }}
+                  />
+                  <span className="font-medium">{item.text}</span>
                 </div>
               ))}
             </motion.div>
 
             {/* CTAs */}
             <motion.div
-              className="flex gap-4"
-              style={{ opacity: textOpacity3 }}
+              initial={FADE_UP.initial}
+              animate={isInView ? FADE_UP.animate : {}}
+              transition={{ ...FADE_UP.transition, delay: 1.1 }}
+              className="flex flex-wrap gap-4 pt-4"
             >
-              <motion.button
-                className="group px-6 py-3 font-semibold rounded-xl flex items-center gap-2"
+              <motion.a
+                href="/contact"
+                className="group px-8 py-4 font-semibold rounded-xl flex items-center gap-3 text-white"
                 style={{
                   background: `linear-gradient(135deg, ${TOKENS.electricBlue} 0%, ${TOKENS.cyan} 100%)`,
-                  color: "white",
                   boxShadow: `0 8px 32px ${TOKENS.electricBlue}60`,
                 }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
               >
                 無料で始める
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </motion.button>
-              
-              <motion.button
-                className="px-6 py-3 font-medium rounded-xl flex items-center gap-2"
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.a>
+
+              <motion.a
+                href="/demo"
+                className="px-8 py-4 font-medium rounded-xl flex items-center gap-3"
                 style={{
                   background: "rgba(255, 255, 255, 0.05)",
                   border: "1px solid rgba(255, 255, 255, 0.15)",
-                  color: "white",
+                  color: TOKENS.textPrimary,
                 }}
-                whileHover={{ background: "rgba(255, 255, 255, 0.1)" }}
+                whileHover={{
+                  background: "rgba(255, 255, 255, 0.1)",
+                  borderColor: "rgba(255, 255, 255, 0.25)",
+                }}
               >
-                <Play className="w-4 h-4" style={{ color: TOKENS.cyan }} />
+                <Play className="w-5 h-5" style={{ color: TOKENS.cyan }} />
                 デモを見る
-              </motion.button>
+              </motion.a>
             </motion.div>
           </div>
 
-          {/* Center: Animated Hub + Satellites */}
-          <div className="absolute right-8 md:right-16 lg:right-32 top-1/2 -translate-y-1/2 w-[400px] h-[400px]">
-            {/* Connection Lines */}
-            <svg 
-              className="absolute inset-0 w-full h-full pointer-events-none"
-              viewBox="0 0 400 400"
-            >
-              <motion.g style={{ opacity: linesOpacity }}>
-                {SATELLITE_NODES.map((_, i) => {
-                  const angleDeg = (360 / ITEM_COUNT) * i - 90;
-                  const angleRad = (angleDeg * Math.PI) / 180;
-                  const endX = 200 + Math.cos(angleRad) * RADIUS;
-                  const endY = 200 + Math.sin(angleRad) * RADIUS;
-                  
-                  return (
-                    <line
-                      key={`line-${i}`}
-                      x1={200}
-                      y1={200}
-                      x2={endX}
-                      y2={endY}
-                      stroke={TOKENS.cyan}
-                      strokeWidth={1.5}
-                      strokeOpacity={0.3}
-                    />
-                  );
-                })}
-              </motion.g>
-            </svg>
-
-            {/* Satellites */}
-            {SATELLITE_NODES.map((node, i) => {
-              const { x, y, opacity, scale } = getSatelliteTransform(i);
-              
-              return (
-                <motion.div
-                  key={node.id}
-                  className="absolute w-14 h-14 rounded-xl flex flex-col items-center justify-center"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    marginLeft: -28,
-                    marginTop: -28,
-                    x,
-                    y,
-                    opacity,
-                    scale,
-                    background: "rgba(0, 27, 61, 0.8)",
-                    border: `1px solid ${TOKENS.cyan}40`,
-                    backdropFilter: "blur(10px)",
-                    boxShadow: `0 4px 20px rgba(0, 0, 0, 0.3)`,
-                  }}
-                >
-                  <span className="text-xl">{node.icon}</span>
-                  <span className="text-[8px] font-semibold text-white/80">{node.label}</span>
-                </motion.div>
-              );
-            })}
-
-            {/* Central F Hub */}
-            <motion.div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full flex items-center justify-center"
+          {/* Right: Unified OS Animation */}
+          <motion.div
+            initial={SCALE_IN.initial}
+            animate={isInView ? SCALE_IN.animate : {}}
+            transition={{ ...SCALE_IN.transition, delay: 0.6 }}
+            className="relative"
+          >
+            <div
+              className="relative rounded-3xl p-1 overflow-hidden"
               style={{
-                scale: hubScale,
-                opacity: hubOpacity,
-                background: `radial-gradient(circle at 40% 35%, rgba(30, 80, 255, 0.9) 0%, rgba(0, 27, 61, 0.95) 100%)`,
-                border: "2px solid rgba(255, 255, 255, 0.15)",
-                boxShadow: useTransform(
-                  hubGlow,
-                  [0.3, 0.8, 1],
-                  [
-                    `0 0 20px ${TOKENS.cyan}40, 0 0 60px ${TOKENS.electricBlue}30`,
-                    `0 0 40px ${TOKENS.cyan}60, 0 0 100px ${TOKENS.electricBlue}50`,
-                    `0 0 60px ${TOKENS.cyan}80, 0 0 150px ${TOKENS.electricBlue}60`,
-                  ]
-                ),
+                background:
+                  "linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(30, 80, 255, 0.1))",
               }}
             >
-              <span 
-                className="text-5xl font-bold"
-                style={{ 
-                  color: TOKENS.textPrimary,
-                  textShadow: `0 0 30px ${TOKENS.cyan}60`,
+              <div
+                className="rounded-3xl overflow-hidden"
+                style={{
+                  background: "rgba(0, 27, 61, 0.6)",
+                  backdropFilter: "blur(20px)",
                 }}
               >
-                F
-              </span>
-              
-              {/* Pulse rings */}
-              <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{ border: `2px solid ${TOKENS.cyan}` }}
-                animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </motion.div>
-
-            {/* Dashboard Preview - fades in at 66-100% */}
-            <DashboardPreview opacity={dashboardOpacity.get()} />
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          style={{ opacity: useTransform(smoothProgress, [0, 0.1, 0.3], [1, 1, 0]) }}
-        >
-          <span className="text-[10px] font-mono tracking-widest text-white/40">
-            スクロールして体験
-          </span>
-          <motion.div
-            className="w-px h-8"
-            style={{ background: `linear-gradient(to bottom, ${TOKENS.cyan}, transparent)` }}
-            animate={{ scaleY: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-        </motion.div>
-
-        {/* Progress Indicator */}
-        <motion.div
-          className="fixed top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 z-50"
-          style={{ opacity: useTransform(smoothProgress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]) }}
-        >
-          {["散開", "収束", "統合"].map((label, i) => {
-            const isActive = useTransform(
-              smoothProgress,
-              [i * 0.33, (i + 1) * 0.33],
-              [0, 1]
-            );
-            
-            return (
-              <div key={i} className="flex items-center gap-2">
-                <motion.div
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    background: useTransform(isActive, [0, 1], ["rgba(255,255,255,0.2)", TOKENS.cyan]),
-                  }}
-                />
-                <motion.span
-                  className="text-[10px] font-mono"
-                  style={{
-                    color: useTransform(isActive, [0, 1], ["rgba(255,255,255,0.3)", TOKENS.cyan]),
-                  }}
-                >
-                  {label}
-                </motion.span>
+                <UnifiedOSAnimation />
               </div>
-            );
-          })}
-        </motion.div>
+            </div>
+
+            {/* Floating label */}
+            <motion.div
+              className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full"
+              style={{
+                background: "rgba(0, 11, 24, 0.9)",
+                border: "1px solid rgba(0, 229, 255, 0.3)",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+              }}
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <span
+                className="text-xs font-mono tracking-wider"
+                style={{ color: TOKENS.cyan }}
+              >
+                12ツール → 1プラットフォーム
+              </span>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        initial={FADE_UP.initial}
+        animate={isInView ? FADE_UP.animate : {}}
+        transition={{ ...FADE_UP.transition, delay: 1.8 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      >
+        <span
+          className="text-[10px] font-mono tracking-widest uppercase"
+          style={{ color: TOKENS.textSecondary }}
+        >
+          スクロール
+        </span>
+        <motion.div
+          className="w-px h-8"
+          style={{
+            background: `linear-gradient(to bottom, ${TOKENS.cyan}, transparent)`,
+          }}
+          animate={{ scaleY: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+      </motion.div>
     </section>
   );
 }
